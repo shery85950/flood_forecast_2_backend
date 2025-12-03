@@ -10,8 +10,11 @@ import java.util.*;
 @Service
 public class AIForecastService {
 
-    private static final String HF_API_URL = "https://router.huggingface.co/v1/chat/completions";
-    private static final String HF_API_KEY = "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";
+    private static final String HF_API_URL = "https://api-inference.huggingface.co/models/SentientAGI/Dobby-Unhinged-Llama-3.3-70B/v1/chat/completions";
+    
+    @org.springframework.beans.factory.annotation.Value("${hf.api.key}")
+    private String hfApiKey;
+
     private static final String MODEL = "SentientAGI/Dobby-Unhinged-Llama-3.3-70B";
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -41,7 +44,7 @@ public class AIForecastService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(HF_API_KEY);
+            headers.setBearerAuth(hfApiKey);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
@@ -102,4 +105,3 @@ public class AIForecastService {
                 """, request.getLocation().getName(), request.getLocation().getRegion(), forecastText.toString());
     }
 }
-
