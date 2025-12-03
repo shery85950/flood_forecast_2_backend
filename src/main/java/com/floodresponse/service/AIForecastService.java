@@ -10,9 +10,8 @@ import java.util.*;
 @Service
 public class AIForecastService {
 
-    private static final String HF_API_URL = "https://api.huggingface.co/v1/chat/completions";
+    private static final String HF_API_URL = "https://api-inference.huggingface.co/models/SentientAGI/Dobby-Unhinged-Llama-3.3-70B";
     private static final String HF_API_KEY = "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";
-    private static final String MODEL = "SentientAGI/Dobby-Unhinged-Llama-3.3-70B:fireworks-ai";
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -21,41 +20,39 @@ public class AIForecastService {
         try {
             String prompt = createAnalysisPrompt(request);
             
+            // Prepare request payload for Hugging Face Inference API
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", MODEL);
-            requestBody.put("temperature", 0.3);
-            requestBody.put("max_tokens", 1000);
+            requestBody.put("inputs", prompt);
             
-            List<Map<String, String>> messages = new ArrayList<>();
-            Map<String, String> systemMessage = new HashMap<>();
-            systemMessage.put("role", "system");
-            systemMessage.put("content", "You are an expert meteorologist and flood risk analyst for Pakistan. Analyze weather forecasts and provide accurate flood risk assessments with actionable recommendations. Always respond with valid JSON only, no additional text.");
-            messages.add(systemMessage);
-            
-            Map<String, String> userMessage = new HashMap<>();
-            userMessage.put("role", "user");
-            userMessage.put("content", prompt);
-            messages.add(userMessage);
-            
-            requestBody.put("messages", messages);
-
+            // Set up headers with Bearer token
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(HF_API_KEY);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-            ResponseEntity<Map> response = restTemplate.postForEntity(HF_API_URL, entity, Map.class);
+            // Make request to Hugging Face Inference API
+            ResponseEntity<String> response = restTemplate.postForEntity(HF_API_URL, entity, String.class);
             
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
-                if (choices != null && !choices.isEmpty()) {
-                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                    return (String) message.get("content");
+                // Parse response - Inference API returns array of objects
+                List<Map<String, Object>> responseList = objectMapper.readValue(
+                    response.getBody(), 
+                    List.class
+                );
+                
+                if (!responseList.isEmpty()) {
+                    Map<String, Object> result = responseList.get(0);
+                    String generatedText = (String) result.get("generated_text");
+                    
+                    // Clean up the response (remove prompt from output)
+                    if (generatedText != null) {
+                        return generatedText.replace(prompt, "").trim();
+                    }
                 }
             }
             
-            throw new RuntimeException("Failed to get valid response from AI API");
+            throw new RuntimeException("Failed to get valid response from AI API: " + response.getStatusCode());
             
         } catch (Exception e) {
             e.printStackTrace();
