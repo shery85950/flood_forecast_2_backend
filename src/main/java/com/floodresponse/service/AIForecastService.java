@@ -11,7 +11,7 @@ import java.util.*;
 public class AIForecastService {
 
     private static final String HF_API_URL = "https://router.huggingface.co/v1/chat/completions";
-    private static final String HF_API_KEY = "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";
+    private static final String HF_API_KEY = "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";
     private static final String MODEL = "SentientAGI/Dobby-Unhinged-Llama-3.3-70B";
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -102,3 +102,4 @@ public class AIForecastService {
                 """, request.getLocation().getName(), request.getLocation().getRegion(), forecastText.toString());
     }
 }
+
