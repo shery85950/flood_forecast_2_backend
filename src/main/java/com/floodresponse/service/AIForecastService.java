@@ -54,7 +54,16 @@ public class AIForecastService {
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) response.getBody().get("choices");
                 if (choices != null && !choices.isEmpty()) {
                     Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                    return (String) message.get("content");
+                    String content = (String) message.get("content");
+                    
+                    // Clean markdown code blocks if present
+                    if (content != null) {
+                        content = content.trim();
+                        if (content.startsWith("```")) {
+                            content = content.replaceAll("```json", "").replaceAll("```", "").trim();
+                        }
+                    }
+                    return content;
                 }
             }
             
