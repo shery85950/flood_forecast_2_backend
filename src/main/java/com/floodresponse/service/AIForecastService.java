@@ -10,7 +10,7 @@ import java.util.*;
 @Service
 public class AIForecastService {
 
-    private static final String HF_API_URL = "https://api-inference.huggingface.co/models/SentientAGI/Dobby-Unhinged-Llama-3.3-70B/v1/chat/completions";
+    private static final String HF_API_URL = "https://router.huggingface.co/v1/chat/completions";
     private static final String HF_API_KEY = "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";
     private static final String MODEL = "SentientAGI/Dobby-Unhinged-Llama-3.3-70B";
 
