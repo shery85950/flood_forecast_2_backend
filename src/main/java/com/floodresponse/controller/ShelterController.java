@@ -47,6 +47,24 @@ public class ShelterController {
         }
     }
 
+    @PatchMapping("/{id}/capacity")
+    public ResponseEntity<Shelter> updateCapacity(@PathVariable Long id, @RequestParam int change) {
+        try {
+            Shelter shelter = shelterService.getShelterById(id)
+                    .orElseThrow(() -> new RuntimeException("Shelter not found"));
+            
+            int newCapacity = shelter.getCapacity() + change;
+            if (newCapacity < 0) {
+                newCapacity = 0; // Prevent negative capacity
+            }
+            
+            shelter.setCapacity(newCapacity);
+            return ResponseEntity.ok(shelterService.updateShelter(id, shelter));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteShelter(@PathVariable Long id) {
         shelterService.deleteShelter(id);
